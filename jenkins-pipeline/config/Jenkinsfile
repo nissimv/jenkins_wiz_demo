@@ -1,0 +1,126 @@
+pipeline {
+    agent any
+    
+    environment {
+        WIZ_TOKEN = credentials('wiz-token')
+        WIZ_CLI_VERSION = 'latest'
+        SCAN_RESULTS_DIR = 'jenkins-pipeline/reports'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                echo 'Code checkout completed'
+            }
+        }
+        
+        stage('Setup Environment') {
+            steps {
+                script {
+                    echo 'Setting up Wiz CLI environment...'
+                    sh '''
+                        # Download and install Wiz CLI
+                        curl -Lo wizcli https://wizcli.app/download/latest/linux/wizcli
+                        chmod +x wizcli
+                        
+                        # Verify Wiz CLI installation
+                        ./wizcli --version
+                    '''
+                }
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                script {
+                    echo 'Running Python tests...'
+                    sh '''
+                        pip install -r requirements.txt
+                        python -m pytest test_app.py -v
+                    '''
+                }
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                script {
+                    echo 'Starting Wiz CLI security scan...'
+                    sh '''
+                        # Create reports directory
+                        mkdir -p jenkins-pipeline/reports
+                        
+                        # Run Wiz CLI scan
+                        ./wizcli scan --path . --token  --output json > jenkins-pipeline/reports/security-scan.json
+                        
+                        # Generate HTML report
+                        ./wizcli scan --path . --token  --output html > jenkins-pipeline/reports/security-report.html
+                        
+                        echo 'Security scan completed'
+                    '''
+                }
+            }
+            post {
+                always {
+                    script {
+                        // Archive security reports
+                        archiveArtifacts artifacts: 'jenkins-pipeline/reports/*', fingerprint: true
+                        
+                        // Publish HTML report
+                        publishHTML([
+                            allowMissing: false,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: 'jenkins-pipeline/reports',
+                            reportFiles: 'security-report.html',
+                            reportName: 'Security Scan Report'
+                        ])
+                    }
+                }
+            }
+        }
+        
+        stage('Security Analysis') {
+            steps {
+                script {
+                    echo 'Analyzing security scan results...'
+                    sh '''
+                        # Parse security results and check for critical issues
+                        python jenkins-pipeline/scripts/analyze_security.py jenkins-pipeline/reports/security-scan.json
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            when {
+                expression { 
+                    // Only deploy if security scan passes
+                    return currentBuild.result == 'SUCCESS'
+                }
+            }
+            steps {
+                script {
+                    echo 'Deployment stage - Security validation passed'
+                    // Add your deployment steps here
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            script {
+                echo 'Pipeline completed with result: ' + currentBuild.result
+                
+                // Send notifications based on security scan results
+                if (currentBuild.result == 'SUCCESS') {
+                    echo ' All security checks passed'
+                } else {
+                    echo ' Security issues detected - deployment blocked'
+                }
+            }
+        }
+    }
+}
