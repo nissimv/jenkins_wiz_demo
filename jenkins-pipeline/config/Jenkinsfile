@@ -25,7 +25,7 @@ pipeline {
                         chmod +x wizcli
                         
                         # Verify Wiz CLI installation
-                        ./wizcli --version
+                        ./wizcli --help
                     '''
                 }
             }

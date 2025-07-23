@@ -70,7 +70,7 @@ setup_wiz_cli() {
     chmod +x wizcli
     
     # Verify installation
-    if ! ./wizcli --version; then
+    if ! ./wizcli --help; then
         log_error "Wiz CLI installation verification failed"
         exit 1
     fi
