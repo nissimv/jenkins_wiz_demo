@@ -36,8 +36,8 @@ pipeline {
                 script {
                     echo 'Running Python tests...'
                     sh '''
-                        pip install -r requirements.txt
-                        python -m pytest test_app.py -v
+                        pip3 install -r requirements.txt
+                        python3 -m pytest test_app.py -v
                     '''
                 }
             }
