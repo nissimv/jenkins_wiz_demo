@@ -61,7 +61,7 @@ setup_wiz_cli() {
     log_info "Setting up Wiz CLI..."
     
     # Download Wiz CLI
-    if ! curl -Lo wizcli "https://wizcli.app/download/latest/linux/wizcli"; then
+    if ! curl -Lo wizcli "https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64"; then
         log_error "Failed to download Wiz CLI"
         exit 1
     fi

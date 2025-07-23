@@ -21,7 +21,7 @@ pipeline {
                     echo 'Setting up Wiz CLI environment...'
                     sh '''
                         # Download and install Wiz CLI
-                        curl -Lo wizcli https://wizcli.app/download/latest/linux/wizcli
+                        curl -Lo wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64
                         chmod +x wizcli
                         
                         # Verify Wiz CLI installation
