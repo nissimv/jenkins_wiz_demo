@@ -36,8 +36,10 @@ pipeline {
                 script {
                     echo 'Running Python tests...'
                     sh '''
-                        pip3 install -r requirements.txt
-                        python3 -m pytest test_app.py -v
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                        python -m pytest test_app.py -v
                     '''
                 }
             }
