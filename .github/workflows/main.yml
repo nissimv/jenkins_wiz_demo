@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SCAN_PATH: "."           # Root of the repository, adjust as needed
-      POLICY: "Default IaC policy" # Policy name defined in Wiz Portal (must match the blocking secret rule)
+      POLICY: "nissim - block build on secret" # Policy name defined in Wiz Portal (must match the blocking secret rule)
     defaults:
       run:
         shell: bash
